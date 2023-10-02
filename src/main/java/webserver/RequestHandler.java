@@ -23,6 +23,7 @@ public class RequestHandler implements Runnable{
      */
 
     Socket connection;
+    final String ROOT_URL="C:\\Users\\rkddu\\KUIT2_Server_Mission_3\\Backend-Java-Tomcat\\webapp";
     private static final Logger log = Logger.getLogger(RequestHandler.class.getName());
     MemoryUserRepository memoryUserRepository= MemoryUserRepository.getInstance();
 
@@ -88,14 +89,14 @@ public class RequestHandler implements Runnable{
                      * Files 라이브러리를 이용해서 파일의 정보를 바이트 단위로 변환
                      */
 
-                    body = Files.readAllBytes(Paths.get("C:\\Users\\rkddu\\KUIT2_Server_Mission_3\\Backend-Java-Tomcat\\webapp\\index.html"));
+                    body = Files.readAllBytes(Paths.get(ROOT_URL+"\\index.html"));
                     response200Header(dos, body.length); // 응답의 헤더를 생성
                     responseBody(dos, body); //응답의 본문을 생성
 
 
                 }else if(url.equals("/user/form.html")){ //미션 2번
 
-                    body = Files.readAllBytes(Paths.get("C:\\Users\\rkddu\\KUIT2_Server_Mission_3\\Backend-Java-Tomcat\\webapp\\user\\form.html"));
+                    body = Files.readAllBytes(Paths.get(ROOT_URL+"\\user\\form.html"));
                     response200Header(dos, body.length); // 응답의 헤더를 생성
                     responseBody(dos, body); //응답의 본문을 생성
 
@@ -117,7 +118,7 @@ public class RequestHandler implements Runnable{
 
                         System.out.println(user.getUserId());
 
-                        body = Files.readAllBytes(Paths.get("C:\\Users\\rkddu\\KUIT2_Server_Mission_3\\Backend-Java-Tomcat\\webapp\\index.html"));
+                        body = Files.readAllBytes(Paths.get(ROOT_URL+"index.html"));
                         response200Header(dos, body.length); // 응답의 헤더를 생성
                         responseBody(dos, body); //응답의 본문을 생성
                     }
@@ -170,7 +171,7 @@ public class RequestHandler implements Runnable{
                 }else if(url.equals("/user/login.html")){ //미션 5번
 
                     if(method.equals("GET")){
-                        body = Files.readAllBytes(Paths.get("C:\\Users\\rkddu\\KUIT2_Server_Mission_3\\Backend-Java-Tomcat\\webapp\\user\\login.html"));
+                        body = Files.readAllBytes(Paths.get(ROOT_URL+"\\user\\login.html"));
                         response200Header(dos, body.length); // 응답의 헤더를 생성
                         responseBody(dos, body); //응답의 본문을 생성
                     }
@@ -215,14 +216,14 @@ public class RequestHandler implements Runnable{
                         }
                     }
                 }else if(url.equals("/login_failed.html")){
-                    body = Files.readAllBytes(Paths.get("C:\\Users\\rkddu\\KUIT2_Server_Mission_3\\Backend-Java-Tomcat\\webapp\\user\\login_failed.html"));
+                    body = Files.readAllBytes(Paths.get(ROOT_URL+"\\user\\login_failed.html"));
                     response200Header(dos, body.length); // 응답의 헤더를 생성
                     responseBody(dos, body); //응답의 본문을 생성
                 }
                 else if(url.equals("/user/userList")){ //미션 6번
                     System.out.println(cookie);
                     if(cookie.equals("logined=true")){
-                        body = Files.readAllBytes(Paths.get("C:\\Users\\rkddu\\KUIT2_Server_Mission_3\\Backend-Java-Tomcat\\webapp\\user\\list.html"));
+                        body = Files.readAllBytes(Paths.get(ROOT_URL+"\\user\\list.html"));
                         response200Header(dos, body.length); // 응답의 헤더를 생성
                         responseBody(dos, body); //응답의 본문을 생성
                     }
@@ -231,6 +232,10 @@ public class RequestHandler implements Runnable{
                         response302Header(dos,body.length,"/user/login.html");
                         responseBody(dos, body);
                     }
+                }else if(method.equals("GET")&&url.endsWith(".css")){ //미션 7번
+                    body=Files.readAllBytes(Paths.get(ROOT_URL+"\\"+url));
+                    response200HeaderWithCss(dos, body.length);
+                    responseBody(dos, body);
                 }else{
                     body = "".getBytes();
                     response200Header(dos, body.length); // 응답의 헤더를 생성
@@ -241,6 +246,18 @@ public class RequestHandler implements Runnable{
 
         } catch (IOException e) {
             log.log(Level.SEVERE,e.getMessage());
+        }
+    }
+
+    private void response200HeaderWithCss(DataOutputStream dos, int lengthOfBodyContent) {
+        try {
+            dos.writeBytes("HTTP/1.1 200 OK \r\n");
+            dos.writeBytes("Content-Type: text/css;charset=utf-8\r\n");
+            dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
+            dos.writeBytes("\r\n");
+            dos.flush();
+        } catch (IOException e) {
+            log.log(Level.SEVERE, e.getMessage());
         }
     }
 
