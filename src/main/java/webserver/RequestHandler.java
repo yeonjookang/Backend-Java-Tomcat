@@ -67,7 +67,7 @@ public class RequestHandler implements Runnable{
                     requestContentLength = Integer.parseInt(line.split(": ")[1]);
                 }
                 if (line.startsWith("Cookie")){
-                    cookie = line.split(": ")[1];
+                    cookie = line.split(": ")[1].split(";")[0];
                 }
             }
 
@@ -218,6 +218,19 @@ public class RequestHandler implements Runnable{
                     body = Files.readAllBytes(Paths.get("C:\\Users\\rkddu\\KUIT2_Server_Mission_3\\Backend-Java-Tomcat\\webapp\\user\\login_failed.html"));
                     response200Header(dos, body.length); // 응답의 헤더를 생성
                     responseBody(dos, body); //응답의 본문을 생성
+                }
+                else if(url.equals("/user/userList")){ //미션 6번
+                    System.out.println(cookie);
+                    if(cookie.equals("logined=true")){
+                        body = Files.readAllBytes(Paths.get("C:\\Users\\rkddu\\KUIT2_Server_Mission_3\\Backend-Java-Tomcat\\webapp\\user\\list.html"));
+                        response200Header(dos, body.length); // 응답의 헤더를 생성
+                        responseBody(dos, body); //응답의 본문을 생성
+                    }
+                    else{
+                        body="".getBytes();
+                        response302Header(dos,body.length,"/user/login.html");
+                        responseBody(dos, body);
+                    }
                 }else{
                     body = "".getBytes();
                     response200Header(dos, body.length); // 응답의 헤더를 생성
