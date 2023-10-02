@@ -91,9 +91,12 @@ public class RequestHandler implements Runnable{
                     response200Header(dos, body.length); // 응답의 헤더를 생성
                     responseBody(dos, body); //응답의 본문을 생성
 
+
                 }else if(url.equals("/user/form.html")){ //미션 2번
 
                     body = Files.readAllBytes(Paths.get("C:\\Users\\rkddu\\KUIT2_Server_Mission_3\\Backend-Java-Tomcat\\webapp\\user\\form.html"));
+                    response200Header(dos, body.length); // 응답의 헤더를 생성
+                    responseBody(dos, body); //응답의 본문을 생성
 
                 }else if(url.startsWith("/user/signup")){ //미션 2,3번
 
@@ -114,6 +117,8 @@ public class RequestHandler implements Runnable{
                         System.out.println(user.getUserId());
 
                         body = Files.readAllBytes(Paths.get("C:\\Users\\rkddu\\KUIT2_Server_Mission_3\\Backend-Java-Tomcat\\webapp\\index.html"));
+                        response200Header(dos, body.length); // 응답의 헤더를 생성
+                        responseBody(dos, body); //응답의 본문을 생성
                     }
 
                     else if(method.equals("POST")){
@@ -136,22 +141,50 @@ public class RequestHandler implements Runnable{
                         User user = new User(userId, password, name, email);
                         memoryUserRepository.addUser(user);
 
-                        body = Files.readAllBytes(Paths.get("C:\\Users\\rkddu\\KUIT2_Server_Mission_3\\Backend-Java-Tomcat\\webapp\\index.html"));
+                        //미션 4번
+
+                        /**
+                         * post sign up이 끝났을 때 index.html로 리다이렉션해주기 위해 상태코드를 302로 반환!
+                         * 3xx 응답 결과에 Location 헤더가 있으면 Location 위치로 자동 이동! (리다이엑션)
+                         * <상태 코드 목록>
+                         * 2xx : 요청 정상 처리
+                         * 3xx : 요청을 완료하려면 추가 행동이 필요
+                         * 4xx : 클라이언트 오류
+                         * 5xx : 서버 오류
+                         */
+                        body="".getBytes();
+
+                        response302Header(dos, body.length,"/"); // 응답의 헤더를 생성
+                        responseBody(dos, body); //응답의 본문을 생성
                     }
                     else {
                         body = "".getBytes();
+                        response200Header(dos, body.length); // 응답의 헤더를 생성
+                        responseBody(dos, body); //응답의 본문을 생성
                     }
 
                 }else{
                     body = "".getBytes();
+                    response200Header(dos, body.length); // 응답의 헤더를 생성
+                    responseBody(dos, body); //응답의 본문을 생성
                 }
-                response200Header(dos, body.length); // 응답의 헤더를 생성
-                responseBody(dos, body); //응답의 본문을 생성
             }
 
 
         } catch (IOException e) {
             log.log(Level.SEVERE,e.getMessage());
+        }
+    }
+
+    private void response302Header(DataOutputStream dos, int lengthOfBodyContent,String redirectionURL) {
+        try {
+            dos.writeBytes("HTTP/1.1 302 Found \r\n");
+            dos.writeBytes("Location: "+redirectionURL+"\r\n");
+            dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
+            dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
+            dos.writeBytes("\r\n");
+        } catch (IOException e) {
+            log.log(Level.SEVERE, e.getMessage());
         }
     }
 
