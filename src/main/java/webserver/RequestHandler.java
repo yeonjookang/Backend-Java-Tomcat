@@ -8,6 +8,7 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -141,6 +142,9 @@ public class RequestHandler implements Runnable{
                         User user = new User(userId, password, name, email);
                         memoryUserRepository.addUser(user);
 
+                        Collection<User> all = memoryUserRepository.findAll();
+                        System.out.println(all.size());
+
                         //미션 4번
 
                         /**
@@ -163,6 +167,57 @@ public class RequestHandler implements Runnable{
                         responseBody(dos, body); //응답의 본문을 생성
                     }
 
+                }else if(url.equals("/user/login.html")){ //미션 5번
+
+                    if(method.equals("GET")){
+                        body = Files.readAllBytes(Paths.get("C:\\Users\\rkddu\\KUIT2_Server_Mission_3\\Backend-Java-Tomcat\\webapp\\user\\login.html"));
+                        response200Header(dos, body.length); // 응답의 헤더를 생성
+                        responseBody(dos, body); //응답의 본문을 생성
+                    }
+                }else if(url.equals("/user/login")){ //미션 5번
+                    if(method.equals("POST")) {
+                        String queryString = IOUtils.readData(br, requestContentLength);
+
+                        Map<String, String> queryParameters = parseQueryString(queryString);
+
+                        String userId = queryParameters.get("userId");
+                        String password = queryParameters.get("password");
+
+                        System.out.println(userId);
+
+                        /**
+                         * Repository에 존재하는 유저면 헤더에 Cookie: logined=true를 추가하고 index.html로 리다이렉트
+                         * 실패하면 logined_failed.html로 리다이렉트
+                         */
+
+                        User findUser = memoryUserRepository.findUserById(userId);
+
+                        if (findUser != null) {
+                            if (findUser.getPassword().equals(password)) {
+                                System.out.println("로그인 성공!");
+                                //로그인 성공
+                                body = "".getBytes();
+                                responseLoginSuccessHeader(dos, body.length, "/index.html");
+                                responseBody(dos, body); //응답의 본문을 생성
+                            } else {
+                                //로그인 실패
+                                System.out.println("로그인 실패!");
+                                body = "".getBytes();
+                                response302Header(dos, body.length, "/login_failed.html");
+                                responseBody(dos, body); //응답의 본문을 생성
+                            }
+                        } else {
+                            //로그인 실패
+                            System.out.println("로그인 실패!");
+                            body = "".getBytes();
+                            response302Header(dos, body.length, "/login_failed.html");
+                            responseBody(dos, body); //응답의 본문을 생성
+                        }
+                    }
+                }else if(url.equals("/login_failed.html")){
+                    body = Files.readAllBytes(Paths.get("C:\\Users\\rkddu\\KUIT2_Server_Mission_3\\Backend-Java-Tomcat\\webapp\\user\\login_failed.html"));
+                    response200Header(dos, body.length); // 응답의 헤더를 생성
+                    responseBody(dos, body); //응답의 본문을 생성
                 }else{
                     body = "".getBytes();
                     response200Header(dos, body.length); // 응답의 헤더를 생성
@@ -173,6 +228,17 @@ public class RequestHandler implements Runnable{
 
         } catch (IOException e) {
             log.log(Level.SEVERE,e.getMessage());
+        }
+    }
+
+    private void responseLoginSuccessHeader(DataOutputStream dos,  int lengthOfBodyContent,String redirectionURL) {
+        try {
+            dos.writeBytes("HTTP/1.1 302 Found \r\n");
+            dos.writeBytes("Location: "+redirectionURL+"\r\n");
+            dos.writeBytes("Cookie: logined=true \r\n");
+            dos.writeBytes("\r\n");
+        } catch (IOException e) {
+            log.log(Level.SEVERE, e.getMessage());
         }
     }
 
